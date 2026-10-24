@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Calculadora de carpules de anestésico local</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Newsreader:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f2f6f5;--sf:#fff;--ink:#12303a;--mut:#53707a;--ac:#0b7a75;--acs:#d7efec;--wr:#8a4304;--wrs:#fdebd6;--er:#a3261f;--ers:#fbe1df;--bd:#c9d8d6;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;--bg:#0d1a1d;--sf:#15262a;--ink:#e3eeee;--mut:#9ab4b8;--ac:#4fc4bc;--acs:#16413f;--wr:#f0b070;--wrs:#3a2a14;--er:#f19a94;--ers:#3d1c1a;--bd:#2c4448}}
+:root[data-theme="dark"]{color-scheme:dark;--bg:#0d1a1d;--sf:#15262a;--ink:#e3eeee;--mut:#9ab4b8;--ac:#4fc4bc;--acs:#16413f;--wr:#f0b070;--wrs:#3a2a14;--er:#f19a94;--ers:#3d1c1a;--bd:#2c4448}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 'IBM Plex Sans',system-ui,sans-serif}
+.wrap{max-width:640px;margin:0 auto;padding:22px 16px 56px}
+h1,h2,.big{font-family:'Newsreader',Georgia,serif;font-weight:600;letter-spacing:-.01em}
+h1{font-size:1.65rem;line-height:1.2;margin:0 0 6px}h2{font-size:1.3rem;margin:22px 0 4px}
+h3{font-size:.95rem;margin:20px 0 6px;color:var(--mut);font-weight:600}
+.mut{color:var(--mut);margin:0 0 12px}
+.bar{display:flex;gap:6px;margin:18px 0 4px}
+.bar div{flex:1;font-size:.78rem;color:var(--mut)}.bar i{display:block;height:4px;border-radius:2px;background:var(--bd);margin-bottom:5px}
+.bar .done i,.bar .cur i{background:var(--ac)}.bar .cur{color:var(--ink);font-weight:600}
+.fld{display:block;margin:14px 0;font-weight:500}
+.fld input{display:block;width:100%;margin-top:6px;padding:12px;font:inherit;font-size:1.1rem;color:var(--ink);background:var(--sf);border:1.5px solid var(--bd);border-radius:10px}
+.fld input:focus,.btn:focus-visible,.opt:has(input:focus-visible){outline:3px solid var(--ac);outline-offset:2px}
+.opt{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;margin:8px 0;background:var(--sf);border:1.5px solid var(--bd);border-radius:10px;cursor:pointer}
+.opt:has(input:checked){border-color:var(--ac);background:var(--acs)}
+.opt input{margin-top:5px;accent-color:var(--ac);width:18px;height:18px;flex:none}
+.opt b{font-weight:600}.opt small{display:block;color:var(--mut)}
+.tag{display:inline-block;font-size:.78rem;color:var(--wr);background:var(--wrs);border-radius:6px;padding:1px 7px;margin-top:3px}
+.nav{display:flex;gap:10px;margin-top:22px}
+.btn{font:inherit;font-weight:600;padding:12px 20px;border-radius:10px;border:1.5px solid var(--ac);background:var(--ac);color:#fff;cursor:pointer}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .btn{color:#06211f}}
+:root[data-theme="dark"] .btn{color:#06211f}
+.btn.ghost{background:transparent;color:var(--ac)}.btn:disabled{opacity:.4;cursor:not-allowed}
+.res{background:var(--sf);border:1.5px solid var(--bd);border-radius:14px;padding:18px;margin-top:14px}
+.big{font-size:3.4rem;line-height:1;margin:2px 0}
+.pills{display:flex;flex-wrap:wrap;gap:5px;margin:14px 0 4px}
+.pills b{width:14px;height:34px;border-radius:7px;border:1.5px solid var(--ac);background:linear-gradient(to top,var(--ac) var(--f),transparent var(--f))}
+.fld select{display:block;width:100%;margin-top:6px;padding:12px;font:inherit;color:var(--ink);background:var(--sf);border:1.5px solid var(--bd);border-radius:10px}
+.vd{border-radius:14px;padding:14px 16px;margin:12px 0;border:2px solid}.vd b{font-size:1.1rem}.vd div{color:var(--ink)}
+.vd.ok{border-color:var(--ac);background:var(--acs)}.vd.w{border-color:var(--wr);background:var(--wrs)}.vd.w b{color:var(--wr)}.vd.e{border-color:var(--er);background:var(--ers)}.vd.e b{color:var(--er)}
+.rec{background:var(--acs);border:2px solid var(--ac);border-radius:14px;padding:16px;margin:14px 0}
+.rn{font-family:'Newsreader',Georgia,serif;font-weight:600;font-size:1.25rem;line-height:1.25;margin:4px 0 6px}
+.tag.ok{color:var(--ac);background:var(--acs);border:1px solid var(--ac)}
+.al{padding:10px 14px;border-radius:10px;margin:10px 0;font-size:.95rem}
+.al.w{background:var(--wrs);color:var(--wr)}.al.e{background:var(--ers);color:var(--er)}
+table{width:100%;border-collapse:collapse;font-size:.93rem;margin-top:8px}
+td{padding:7px 0;border-top:1px solid var(--bd);vertical-align:top}td:last-child{text-align:right;font-weight:600;white-space:nowrap;padding-left:10px}
+.foot{margin-top:28px;font-size:.85rem;color:var(--mut)}
+</style></head><body><div class="wrap">
+<h1>Calculadora de carpules de anestésico local</h1>
+<p class="mut">Responde cada paso y obtén el número máximo de carpules con su procedimiento de cálculo.</p>
+<div id="app"></div>
+<p class="foot">Herramienta de apoyo académico. Las dosis máximas varían según la fuente (Malamed, fichas técnicas, textos locales): contrasta siempre con tu bibliografía y tu docente. No sustituye el juicio clínico.</p>
+</div>
+<script>
+const $=s=>document.querySelector(s);
+const P=[
+{id:'l1',f:'Lidocaína',n:'Lidocaína 2% + epinefrina 1:100.000',c:2,v:'epi',d:100000,k:7,m:500,a:0},
+{id:'l3',f:'Lidocaína',n:'Lidocaína 2% + epinefrina 1:80.000',c:2,v:'epi',d:80000,k:7,m:500,a:0},
+{id:'l4',f:'Lidocaína',n:'Lidocaína 2% + epinefrina 1:200.000',c:2,v:'epi',d:200000,k:7,m:500,a:0},
+{id:'l5',f:'Lidocaína',n:'Lidocaína 2% + epinefrina 1:50.000',c:2,v:'epi',d:50000,k:7,m:500,a:0},
+{id:'l2',f:'Lidocaína',n:'Lidocaína 2% sin vasoconstrictor',c:2,v:null,k:4.4,m:300,a:0},
+{id:'m1',f:'Mepivacaína',n:'Mepivacaína 3% sin vasoconstrictor',c:3,v:null,k:6.6,m:400,a:0},
+{id:'m2',f:'Mepivacaína',n:'Mepivacaína 2% + epinefrina 1:100.000',c:2,v:'epi',d:100000,k:6.6,m:400,a:0},
+{id:'m3',f:'Mepivacaína',n:'Mepivacaína 2% + levonordefrina 1:20.000',c:2,v:'lev',d:20000,k:6.6,m:400,a:0},
+{id:'a1',f:'Articaína',n:'Articaína 4% + epinefrina 1:100.000',c:4,v:'epi',d:100000,k:7,m:500,a:4},
+{id:'a2',f:'Articaína',n:'Articaína 4% + epinefrina 1:200.000',c:4,v:'epi',d:200000,k:7,m:500,a:4},
+{id:'a3',f:'Articaína',n:'Articaína 2% + epinefrina 1:200.000',c:2,v:'epi',d:200000,k:7,m:500,a:4},
+{id:'p1',f:'Prilocaína',n:'Prilocaína 4% sin vasoconstrictor',c:4,v:null,k:6,m:400,a:0},
+{id:'p2',f:'Prilocaína',n:'Prilocaína 4% + epinefrina 1:200.000',c:4,v:'epi',d:200000,k:6,m:400,a:0},
+{id:'p3',f:'Prilocaína',n:'Prilocaína 3% + felipresina 0,03 UI/mL',c:3,v:'fel',k:6,m:400,a:0},
+{id:'b1',f:'Bupivacaína',n:'Bupivacaína 0,5% + epinefrina 1:200.000',c:.5,v:'epi',d:200000,k:1.3,m:90,a:12}];
+const VM={epi:[0.2,0.04],lev:[1,0.2],fel:[0.27,0.27]};
+const C=[
+{id:'card',t:'Cardiopatía (isquémica, arritmias, insuficiencia cardiaca compensada)',cap:1,n:'Cardiopatía: el vasoconstrictor adrenérgico se limita a 0,04 mg de epinefrina (0,2 mg de levonordefrina).'},
+{id:'bb',t:'Betabloqueador no selectivo, IMAO o antidepresivo tricíclico',cap:1,n:'Interacción con epinefrina (riesgo de crisis hipertensiva): se limita al máximo el vasoconstrictor.'},
+{id:'hta',t:'Hipertensión controlada',n:'Monitoriza la presión, aspira siempre e inyecta lento.'},
+{id:'htan',t:'Hipertensión no controlada (≥ 180/110)',av:1,n:'Difiere el tratamiento electivo y remite a valoración médica.'},
+{id:'tir',t:'Hipertiroidismo no controlado',av:1,n:'Evita vasoconstrictores adrenérgicos hasta lograr control médico.'},
+{id:'dm',t:'Diabetes mellitus',n:'Si está descompensada, el vasoconstrictor puede elevar la glucemia: usa el mínimo necesario.'},
+{id:'hep',t:'Insuficiencia hepática',f:.5,n:'Las amidas se metabolizan en el hígado: dosis reducida al 50 % (criterio didáctico; confirma con tu docente).'},
+{id:'ren',t:'Insuficiencia renal',f:.75,n:'Eliminación renal alterada: dosis reducida al 75 % (criterio didáctico; confirma con tu docente).'},
+{id:'emb',t:'Embarazo',bv:['fel'],n:'Lidocaína con epinefrina es la opción más usada; evita la felipresina (efecto oxitócico) y difiere lo electivo.'},
+{id:'lac',t:'Lactancia',n:'Las dosis odontológicas son compatibles con la lactancia.'},
+{id:'met',t:'Metahemoglobinemia o déficit de G6PD',bf:['Prilocaína','Articaína'],n:'Riesgo de metahemoglobinemia con prilocaína y, con cautela, articaína.'},
+{id:'sulf',t:'Alergia a sulfitos',av:1,n:'Los sulfitos acompañan a las presentaciones con vasoconstrictor adrenérgico.'},
+{id:'ima',t:'Infarto de miocardio o ACV en los últimos 6 meses',av:1,n:'Difiere el tratamiento electivo; si es urgente, coordina con el médico tratante y evita el vasoconstrictor adrenérgico.'},
+{id:'dig',t:'Digitálicos o antiarrítmicos',cap:1,n:'Riesgo de arritmias con epinefrina: se limita el vasoconstrictor.'},
+{id:'feo',t:'Feocromocitoma',av:1,n:'Evita los vasoconstrictores adrenérgicos.'},
+{id:'coc',t:'Consumo reciente de cocaína o estimulantes',av:1,n:'Con cocaína en las últimas 24 h evita la epinefrina (riesgo de arritmia e infarto).'},
+{id:'asma',t:'Asma',n:'Las presentaciones con vasoconstrictor llevan sulfitos, que pueden causar broncoespasmo en asmáticos sensibles. Ten el inhalador a mano.'},
+{id:'epil',t:'Epilepsia',n:'Dosis altas de anestésico pueden desencadenar convulsiones: respeta el máximo y aspira siempre.'},
+{id:'anti',t:'Anticoagulantes o antiagregantes',n:'Aspira, evita bloqueos profundos si hay riesgo de sangrado y prevé hemostasia local.'},
+{id:'glau',t:'Glaucoma de ángulo cerrado',n:'La epinefrina puede elevar la presión intraocular: usa la menor dosis efectiva.'},
+{id:'hipot',t:'Hipotiroidismo',n:'Sin cambios de dosis si está controlado; cuida la sedación asociada.'},
+{id:'epoc',t:'EPOC o enfermedad respiratoria crónica',n:'Evita sedantes depresores respiratorios y mantén al paciente semisentado.'},
+{id:'ansi',t:'Ansiedad o fobia dental',n:'La ansiedad eleva la adrenalina endógena: reduce la ansiedad y evita dosis altas de epinefrina.'},
+{id:'amid',t:'Alergia confirmada a anestésicos tipo amida',all:1,n:''}];
+const STEPS=['Paciente','Condición','Anestésico','Resultado'];
+const S={step:0,age:'',w:'',cond:new Set(),pid:null,ref:'f',vol:1.8,name:'',sex:'',other:'',algY:false,alg:'',sup:'',plan:'',cuErr:'',cuf:{name:'',c:'',k:'',m:'',v:'',d:'',a:''}};
+const num=v=>parseFloat(String(v).replace(',','.'));
+const fmt=n=>n.toLocaleString('es-CO',{maximumFractionDigits:2});
+const okPt=()=>{const a=num(S.age),w=num(S.w);return a>=0&&a<=110&&w>=3&&w<=200};
+const kmax=p=>(p.f==='Lidocaína'&&p.v&&S.ref==='m')?{k:4.4,m:300}:{k:p.k,m:p.m};
+const norm=t=>String(t||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+const esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function calc(id){
+ const p=P.find(x=>x.id===(id||S.pid)),{k,m}=kmax(p),w=num(S.w),age=num(S.age);
+ let f=1,cap=false,avoid=false;const notes=[],blocks=[];
+ C.filter(c=>S.cond.has(c.id)).forEach(c=>{
+  if(c.f)f*=c.f;if(c.cap)cap=true;
+  if(c.av&&p.v&&p.v!=='fel'){avoid=true;blocks.push(c.t+': evita el vasoconstrictor adrenérgico. Elige una presentación sin vasoconstrictor o con felipresina.')}
+  if(c.bf&&c.bf.includes(p.f))blocks.push(c.t+': evita '+p.f.toLowerCase()+'.');
+  if(c.bv&&c.bv.includes(p.v))blocks.push(c.t+': esta presentación no es adecuada.');
+  if(c.all)blocks.push('Alergia a amidas: ningún carpule de esta lista es adecuado. Deriva a alergología.');
+  if(c.n&&!c.all)notes.push(c.n)});
+ if(age<p.a)blocks.push('No recomendada en menores de '+p.a+' años.');
+ const at=norm(S.alg),pn=norm(p.n),st=norm(S.sup);
+ if(S.algY){
+  if(/amida/.test(at))blocks.push('Alergia referida a anestésicos tipo amida: ninguna presentación es adecuada.');
+  [[/lidocai/,'lidocaína'],[/mepivac/,'mepivacaína'],[/articai/,'articaína'],[/prilocai/,'prilocaína'],[/bupivac/,'bupivacaína']].forEach(([x,t])=>{if(x.test(at)&&x.test(pn))blocks.push('Alergia referida a '+t+'.')});
+  if(/sulfit/.test(at)&&p.v&&p.v!=='fel'){avoid=true;blocks.push('Alergia a sulfitos: evita presentaciones con vasoconstrictor adrenérgico.')}
+  if(/epinefr|adrenal/.test(at)&&p.v==='epi')blocks.push('Alergia referida a la epinefrina.');
+  if(/levonord/.test(at)&&p.v==='lev')blocks.push('Alergia referida a la levonordefrina.');
+  if(/felipres|octapres/.test(at)&&p.v==='fel')blocks.push('Alergia referida a la felipresina.');
+  if(S.alg.trim())notes.push('Alergias referidas: '+esc(S.alg)+'. Verifica reacción cruzada y excipientes (sulfitos, parabenos, látex del émbolo).')}
+ if(/ginkgo|\bajo\b|jengibre|omega|vitamina e\b|ginseng|curcuma/.test(st))notes.push('Ginkgo, ajo, jengibre, omega 3, vitamina E, cúrcuma o ginseng aumentan el riesgo de sangrado: aspira, inyecta lento y prevé hemostasia local.');
+ if(/san juan|hiperico/.test(st))notes.push('Hierba de San Juan: induce enzimas hepáticas y puede alterar el metabolismo de los anestésicos; usa la dosis mínima efectiva.');
+ if(/efedra|ephedra|guarana|yohimbina|ma huang|cafeina/.test(st)){cap=true;notes.push('Los estimulantes (efedra, guaraná, yohimbina, cafeína en dosis altas) potencian la epinefrina: se limita el vasoconstrictor.')}
+ if(S.sup.trim())notes.push('Suplementos referidos: '+esc(S.sup)+'. Revisa interacciones con tu referencia.');
+ if(S.other.trim())notes.push('Condición adicional referida: '+esc(S.other)+'. No se evalúa automáticamente: considera su efecto en la dosis y en el vasoconstrictor.');
+ if(S.sex==='F'&&age>=10&&age<=55&&!S.cond.has('emb')&&!S.cond.has('lac'))notes.push('Paciente en edad fértil: confirma si existe posibilidad de embarazo antes de elegir el anestésico.');
+ if(age>=65)notes.push('Adulto mayor: considera reducir la dosis y aspirar siempre; hay menor aclaramiento y más comorbilidad.');
+ const byW=k*w,base=Math.min(byW,m),mg=base*f,cm=p.c*10*S.vol,A=mg/cm;
+ let V=Infinity,vm,vp,u;
+ if(p.v){const[h,c]=VM[p.v];vm=avoid?0:(cap&&p.v!=='fel'?c:h);vp=(p.v==='fel'?.03:1000/p.d)*S.vol;V=vm/vp;u=p.v==='fel'?'UI':'mg'}
+ let N=Math.min(A,V);if(blocks.length&&!avoid)N=0;if(avoid)N=0;
+ return{p,k,m,w,byW,base,f,mg,cm,A,V,vm,vp,u,N,notes,blocks,lim:V<A?'vasoconstrictor':'anestésico'}}
+function pills(N){const t=Math.min(Math.ceil(N),24);let s='';for(let i=0;i<t;i++)s+='<b style="--f:'+Math.min(1,N-i)*100+'%"></b>';return'<div class="pills" aria-hidden="true">'+s+'</div>'}
+function rec(){
+ const age=num(S.age),has=id=>S.cond.has(id),cs=C.filter(c=>has(c.id)),capV=cs.some(c=>c.cap),avV=cs.some(c=>c.av);
+ const B={Lidocaína:5,Articaína:5,Mepivacaína:4,Prilocaína:3,Bupivacaína:1};
+ const G={Lidocaína:'anestésico de referencia, eficaz y bien tolerado',Articaína:'mayor difusión en hueso y tejidos blandos, muy eficaz en infiltración',Mepivacaína:'buena opción cuando conviene evitar o reducir el vasoconstrictor',Prilocaína:'alternativa de tolerancia media y menor vasodilatación',Bupivacaína:'acción prolongada, útil en procedimientos largos y dolor posoperatorio'};
+ return P.map(p=>{const r=calc(p.id);if(r.blocks.length||r.N<=0)return null;
+  let s=(B[p.f]||3)+(p.id==='l1'?1:0)+Math.min(r.N,12)*.1;const w=[];
+  if(capV||avV){if(!p.v){s+=4;w.push('no lleva vasoconstrictor, protege al paciente cardiovascular')}else if(p.v==='fel'){s+=3;w.push('la felipresina no tiene efecto adrenérgico')}else if(capV&&p.d>=200000){s+=1;w.push('menor concentración de epinefrina')}}
+  if(age<12&&p.f==='Lidocaína'){s+=2;w.push('amplio margen de seguridad en niños')}
+  if(has('emb')&&p.f==='Lidocaína'&&p.v==='epi'){s+=3;w.push('es la opción de elección en el embarazo')}
+  if(has('hep')&&p.f==='Articaína'){s+=3;w.push('se hidroliza en plasma y depende menos del hígado')}
+  if(!w.length)w.push(G[p.f]||'presentación que ingresaste');
+  return{p,s,r,w:w.join('; ')}}).filter(Boolean).sort((a,b)=>b.s-a.s)}
+function recBox(){const R=rec();
+ if(!R.length)return'<div class="al e">Ninguna presentación de la lista es adecuada para este paciente. Revisa las condiciones o remite.</div>';
+ const a=R[0],o=R.slice(1,3),n=x=>Math.floor(x.r.N+1e-9);
+ return`<div class="rec"><div class="mut" style="margin:0">Recomendada para este paciente</div><div class="rn">${a.p.n}</div><div><b>Máximo:</b> ${n(a)} carpules (${fmt(a.r.N)} exactos, ${fmt(a.r.N*a.r.cm)} mg).</div><div><b>Mínimo orientativo:</b> ${fmt(Math.min(.5,a.r.N))} carpule.</div><div>${a.w[0].toUpperCase()+a.w.slice(1)}.</div><div class="mut" style="margin:6px 0 0;font-size:.85rem">No existe un mínimo farmacológico: 0,5 carpule (≈ 0,9 mL) es el volumen habitual para infiltrar un diente; un bloqueo troncular suele requerir cerca de 1 carpule.</div>${S.pid===a.p.id?'<span class="tag ok">Coincide con tu elección</span>':'<button class="btn" style="margin-top:10px" data-use="'+a.p.id+'">Usar esta</button>'}${o.length?'<div class="mut" style="margin:12px 0 0">Alternativas: '+o.map(x=>x.p.n+' ('+n(x)+')').join('; ')+'</div>':''}</div>`}
+function addCu(){const f=S.cuf,c=num(f.c),k=num(f.k),m=num(f.m),d=num(f.d),a=num(f.a)||0;
+ if(!(c>0)||!(k>0)){S.cuErr='Escribe al menos la concentración (%) y los mg/kg.';render();return}
+ if((f.v==='epi'||f.v==='lev')&&!(d>0)){S.cuErr='Indica la dilución del vasoconstrictor (por ejemplo 100000 para 1:100.000).';render();return}
+ const nm=esc(f.name.trim()||'Mi anestésico'),VN={epi:'epinefrina',lev:'levonordefrina',fel:'felipresina'};
+ const p={id:'cu',f:nm,n:nm+' '+f.c+'%'+(f.v?' + '+VN[f.v]+(f.v==='fel'?'':' 1:'+fmt(d)):'')+' (agregado por ti)',c,v:f.v||null,d,k,m:m>0?m:Infinity,a};
+ const i=P.findIndex(x=>x.id==='cu');if(i<0)P.push(p);else P[i]=p;S.pid='cu';S.cuErr='';render()}
+function verdict(r){const R=rec(),top=R.slice(0,3).some(x=>x.p.id===r.p.id),pl=num(S.plan),mx=Math.floor(r.N+1e-9),bad=r.blocks.length>0;
+ const a=bad?['e','Anestésico INDEBIDO',r.blocks.join(' ')]:top?['ok','Anestésico DEBIDO','Es adecuado para este paciente y está entre las mejores opciones de la lista.']:['w','Anestésico ACEPTABLE CON RESERVAS','No tiene contraindicaciones, pero hay opciones mejor indicadas para este paciente (ver recomendación).'];
+ const d=!(pl>0)?['w','Dosis sin evaluar','No indicaste cuántos carpules piensas administrar.']:bad?['e','Dosis INDEBIDA','Con este anestésico no debe administrarse ningún carpule a este paciente.']:pl>r.N+1e-9?['e','Dosis INDEBIDA',fmt(pl)+' carpules superan el máximo de '+mx+' para este paciente.']:['ok','Dosis DEBIDA',fmt(pl)+' carpules están dentro del máximo de '+mx+'.'];
+ return'<h3>Veredicto final</h3>'+[a,d].map(x=>'<div class="vd '+x[0]+'"><b>'+x[1]+'</b><div>'+x[2]+'</div></div>').join('')}
+function s0(){return`<h2>Datos del paciente</h2><p class="mut">La dosis se calcula por kilo de peso.</p>
+<label class="fld">Nombre del paciente (opcional)<input data-t="name" autocomplete="off" value="${esc(S.name)}" placeholder="Ej. María Pérez"></label>
+<label class="fld">Edad (años)<input id="age" inputmode="decimal" autocomplete="off" value="${S.age}" placeholder="Ej. 8"></label>
+<label class="fld">Peso (kg)<input id="w" inputmode="decimal" autocomplete="off" value="${S.w}" placeholder="Ej. 25"></label>
+<h3>Sexo del paciente</h3>
+<label class="opt"><input type="radio" name="sx" data-sx="F" ${S.sex==='F'?'checked':''}><span><b>Femenino</b></span></label>
+<label class="opt"><input type="radio" name="sx" data-sx="M" ${S.sex==='M'?'checked':''}><span><b>Masculino</b></span></label>
+<div class="nav"><button class="btn" id="next" ${okPt()?'':'disabled'}>Continuar</button></div>`}
+function s1(){return`<h2>Condición clínica</h2><p class="mut">Marca todas las que apliquen. Modifican la dosis, el vasoconstrictor o las opciones.</p>
+<label class="opt"><input type="checkbox" data-c="none" ${S.cond.size?'':'checked'}><span><b>Sin condiciones relevantes</b><small>Paciente sano (ASA I)</small></span></label>
+${C.map(c=>`<label class="opt"><input type="checkbox" data-c="${c.id}" ${S.cond.has(c.id)?'checked':''}><span>${c.t}</span></label>`).join('')}
+<h3>Otra condición clínica</h3><label class="fld" style="margin-top:0"><input data-t="other" autocomplete="off" value="${esc(S.other)}" placeholder="Escríbela si no está en la lista"></label>
+<h3>Alergias a medicamentos o productos naturales</h3>
+<label class="opt"><input type="radio" name="al" data-al="0" ${S.algY?'':'checked'}><span><b>No refiere alergias</b></span></label>
+<label class="opt"><input type="radio" name="al" data-al="1" ${S.algY?'checked':''}><span><b>Sí refiere alergias</b></span></label>
+${S.algY?'<label class="fld" style="margin-top:0"><input data-t="alg" autocomplete="off" value="'+esc(S.alg)+'" placeholder="Ej. penicilina, lidocaína, sulfitos, látex, propóleo"></label>':''}
+<h3>Suplementos o multivitamínicos</h3><label class="fld" style="margin-top:0"><input data-t="sup" autocomplete="off" value="${esc(S.sup)}" placeholder="Ej. multivitamínico, omega 3 (vacío si no consume)"></label>
+<div class="nav"><button class="btn ghost" data-go="0">Atrás</button><button class="btn" data-go="2">Continuar</button></div>`}
+function s2(){const age=num(S.age);let g='';const R0=rec(),rid=R0.length?R0[0].p.id:null;
+ P.forEach((p,i)=>{if(!i||P[i-1].f!==p.f)g+='<h3>'+p.f+'</h3>';const{k,m}=kmax(p);
+  g+=`<label class="opt"><input type="radio" name="an" data-p="${p.id}" ${S.pid===p.id?'checked':''}><span><b>${p.n}</b><small>${fmt(p.c*10*S.vol)} mg por carpule · ${fmt(k)} mg/kg · tope ${fmt(m)} mg</small>${rid===p.id?'<span class="tag ok">Recomendada</span> ':''}${age<p.a?'<span class="tag">No recomendada en menores de '+p.a+' años</span>':''}</span></label>`});
+ return`<h2>Anestésico y vasoconstrictor</h2><p class="mut">Elige la presentación que vas a usar.</p>${recBox()}
+<h3>Dosis de lidocaína con vasoconstrictor</h3>
+<label class="opt"><input type="radio" name="ref" data-r="f" ${S.ref==='f'?'checked':''}><span><b>7 mg/kg, tope 500 mg</b><small>Ficha técnica / ADA</small></span></label>
+<label class="opt"><input type="radio" name="ref" data-r="m" ${S.ref==='m'?'checked':''}><span><b>4,4 mg/kg, tope 300 mg</b><small>Malamed (más conservadora)</small></span></label>
+<h3>Volumen del carpule</h3>
+<label class="opt"><input type="radio" name="vol" data-v="1.8" ${S.vol===1.8?'checked':''}><span><b>1,8 mL</b></span></label>
+<label class="opt"><input type="radio" name="vol" data-v="1.7" ${S.vol===1.7?'checked':''}><span><b>1,7 mL</b></span></label>${g}
+<h3>¿No está en la lista? Agrega tu anestésico</h3>
+<div class="res" style="margin:0">
+<label class="fld" style="margin-top:0">Nombre<input data-f="name" autocomplete="off" value="${esc(S.cuf.name)}" placeholder="Ej. Xylestesin"></label>
+<label class="fld">Concentración (%)<input data-f="c" inputmode="decimal" value="${esc(S.cuf.c)}" placeholder="Ej. 2"></label>
+<label class="fld">Dosis máxima (mg/kg)<input data-f="k" inputmode="decimal" value="${esc(S.cuf.k)}" placeholder="Ej. 4,4"></label>
+<label class="fld">Tope absoluto en mg (opcional)<input data-f="m" inputmode="decimal" value="${esc(S.cuf.m)}" placeholder="Ej. 300"></label>
+<label class="fld">Vasoconstrictor<select data-f="v"><option value="" ${S.cuf.v===''?'selected':''}>Ninguno</option><option value="epi" ${S.cuf.v==='epi'?'selected':''}>Epinefrina</option><option value="lev" ${S.cuf.v==='lev'?'selected':''}>Levonordefrina</option><option value="fel" ${S.cuf.v==='fel'?'selected':''}>Felipresina</option></select></label>
+<label class="fld">Dilución, solo para epinefrina o levonordefrina (100000 = 1:100.000)<input data-f="d" inputmode="decimal" value="${esc(S.cuf.d)}" placeholder="Ej. 100000"></label>
+<label class="fld">Edad mínima recomendada, en años (opcional)<input data-f="a" inputmode="decimal" value="${esc(S.cuf.a)}" placeholder="Ej. 4"></label>
+<button class="btn" data-cu="1">Usar mi anestésico</button>${S.cuErr?'<div class="al e">'+S.cuErr+'</div>':''}</div>
+<h3>Carpules que piensas administrar (opcional)</h3><label class="fld" style="margin-top:0"><input data-t="plan" inputmode="decimal" autocomplete="off" value="${esc(S.plan)}" placeholder="Ej. 3"></label>
+<div class="nav"><button class="btn ghost" data-go="1">Atrás</button><button class="btn" data-go="3" ${S.pid?'':'disabled'}>Calcular</button></div>`}
+function s3(){const r=calc(),n=Math.floor(r.N+1e-9),p=r.p;
+ let h=`<h2>Resultado${S.name.trim()?' de '+esc(S.name.trim()):''}</h2><p class="mut" style="margin:0 0 4px">${S.sex==='F'?'Femenino':S.sex==='M'?'Masculino':'Sexo no indicado'}, ${fmt(num(S.age))} años, ${fmt(num(S.w))} kg</p><div class="res"><div class="mut" style="margin:0">${p.n}</div>
+<div class="big">${n} ${n===1?'carpule':'carpules'}</div>
+<div class="mut" style="margin:0">Máximo entero. Equivale a ${fmt(r.N)} carpules (${fmt(r.N*r.cm)} mg).</div>${pills(r.N)}`;
+ if(r.blocks.length)h+=r.blocks.map(b=>'<div class="al e">'+b+'</div>').join('');
+ else if(p.v&&r.V<r.A)h+='<div class="al w">El límite lo marca el vasoconstrictor, no el anestésico.</div>';
+ h+=`<table><tr><td>Dosis máxima del anestésico<br><small class="mut">mín(${fmt(r.k)} mg/kg × ${fmt(r.w)} kg = ${fmt(r.byW)} mg; tope ${fmt(r.m)} mg)${r.f<1?' × '+r.f:''}</small></td><td>${fmt(r.mg)} mg</td></tr>
+<tr><td>Contenido por carpule<br><small class="mut">${p.c}% × 10 × ${fmt(S.vol)} mL</small></td><td>${fmt(r.cm)} mg</td></tr>
+<tr><td>Carpules según el anestésico<br><small class="mut">${fmt(r.mg)} ÷ ${fmt(r.cm)}</small></td><td>${fmt(r.A)}</td></tr>`;
+ if(p.v)h+=`<tr><td>Carpules según el vasoconstrictor<br><small class="mut">${fmt(r.vm)} ${r.u} máx ÷ ${fmt(r.vp)} ${r.u} por carpule</small></td><td>${fmt(r.V)}</td></tr>`;
+ h+=`<tr><td>Límite que manda</td><td>${p.v?r.lim:'anestésico'}</td></tr></table></div>`;
+ h+=recBox();if(r.notes.length)h+='<h3>Consideraciones clínicas</h3>'+r.notes.map(x=>'<div class="al w">'+x+'</div>').join('');
+ h+=verdict(r);h+=`<div class="nav"><button class="btn ghost" data-go="2">Cambiar anestésico</button><button class="btn" id="reset">Nuevo paciente</button></div>`;return h}
+function render(){
+ $('#app').innerHTML='<div class="bar">'+STEPS.map((t,i)=>'<div class="'+(i<S.step?'done':i===S.step?'cur':'')+'"><i></i>'+t+'</div>').join('')+'</div>'+[s0,s1,s2,s3][S.step]();
+ window.scrollTo(0,0)}
+document.addEventListener('click',e=>{
+ const b=e.target.closest('[data-go]');if(b&&!b.disabled){S.step=+b.dataset.go;render()}
+ if(e.target.id==='next'&&okPt()){S.step=1;render()}
+ const cb=e.target.closest('[data-cu]');if(cb)addCu();const u=e.target.closest('[data-use]');if(u){S.pid=u.dataset.use;render()}
+ if(e.target.id==='reset'){S.step=0;S.age=S.w='';S.cond=new Set();S.pid=null;S.other=S.alg=S.sup=S.plan=S.name=S.sex='';S.algY=false;render()}});
+document.addEventListener('input',e=>{
+ if(e.target.id==='age'||e.target.id==='w'){S[e.target.id]=e.target.value;$('#next').disabled=!okPt()}
+ if(e.target.dataset.t)S[e.target.dataset.t]=e.target.value;
+ if(e.target.dataset.f)S.cuf[e.target.dataset.f]=e.target.value});
+document.addEventListener('change',e=>{const t=e.target,d=t.dataset;
+ if(d.c){if(d.c==='none')S.cond.clear();else t.checked?S.cond.add(d.c):S.cond.delete(d.c);render()}
+ else if(d.p){S.pid=d.p;render()}
+ else if(d.r){S.ref=d.r;render()}
+ else if(d.v){S.vol=+d.v;render()}
+ else if(d.al!==undefined){S.algY=d.al==='1';render()}
+ else if(d.sx){S.sex=d.sx}});
+render();
+</script></body></html>
