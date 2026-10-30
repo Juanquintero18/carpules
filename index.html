@@ -80,6 +80,13 @@ td{padding:7px 0;border-top:1px solid var(--bd);vertical-align:top}td:last-child
 .tm.fin{border-color:var(--ac);background:var(--acs)}.tm.fin .tt{color:var(--ac)}
 .tm.low .tt{color:var(--wr)}.tm.low .tr i{background:var(--wr)}
 .tm .ts{min-height:1.5em;margin:10px 0 0;color:var(--mut);font-size:.95rem}
+.wref{background:var(--acs);border:1.5px solid var(--ac);border-radius:10px;padding:10px 14px;margin:6px 0 10px;font-size:.95rem;line-height:1.45}.wref:empty{display:none}.wref small{color:var(--mut)}
+.bar{gap:4px}.bar div{font-size:.7rem;min-width:0}
+.pg{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0 4px}
+.pg select,.pg input{width:100%;box-sizing:border-box;padding:10px;font:inherit;font-size:1.05rem;color:var(--ink);background:var(--sf);border:1.5px solid var(--bd);border-radius:10px}
+.pg select{font-size:.9rem;color:var(--mut)}.pg input{text-align:center}
+.pg input:focus,.pg select:focus{outline:3px solid var(--ac);outline-offset:1px}
+.prr{margin-top:8px;padding:10px 12px;border-radius:10px;background:var(--acs);font-size:.95rem}.prr.w{background:var(--wrs);color:var(--wr)}.prr:empty{display:none}
 .foot{margin-top:28px;font-size:.85rem;color:var(--mut)}
 </style></head><body><div class="wrap">
 <h1>Calculadora de carpules de anestésico local</h1>
@@ -139,11 +146,33 @@ const C=[
 {id:'ains',t:'Toma AINE o aspirina',n:'Mayor riesgo de sangrado: aspira e inyecta lento.'},
 {id:'isrs',t:'Toma antidepresivos ISRS o IRSN',n:'Interacción leve con la epinefrina: vigila pulso y presión.'},
 {id:'amid',t:'Alergia confirmada a anestésicos tipo amida',all:1,n:''}];
-const STEPS=['Paciente','Condición','Anestésico','Resultado'];
-const S={step:0,age:'',w:'',cond:new Set(),pid:null,ref:'f',vol:1.8,name:'',sex:'',tech:'inf',prev:'',sbp:'',dbp:'',glu:'',asa:'',meds:'',practice:false,guess:'',other:'',algY:false,alg:'',sup:'',plan:'',cuErr:'',cuf:{name:'',c:'',k:'',m:'',v:'',d:'',a:''}};
+const STEPS=['Paciente','Práctica','Condición','Anestésico','Resultado'];
+const S={step:0,age:'',w:'',h:'',prCmp:false,pr:null,cond:new Set(),pid:null,ref:'f',vol:1.8,name:'',sex:'',tech:'exps',procOther:'',prev:'',sbp:'',dbp:'',glu:'',asa:'',meds:'',practice:false,guess:'',other:'',algY:false,alg:'',sup:'',plan:'',cuErr:'',cuf:{name:'',c:'',k:'',m:'',v:'',d:'',a:''}};
 const num=v=>parseFloat(String(v).replace(',','.'));
 const fmt=n=>n.toLocaleString('es-CO',{maximumFractionDigits:2});
 const okPt=()=>{const a=num(S.age),w=num(S.w);return a>=0&&a<=110&&w>=3&&w<=200};
+const f1=n=>n.toLocaleString('es-CO',{minimumFractionDigits:1,maximumFractionDigits:1}),f4=n=>n.toLocaleString('es-CO',{maximumFractionDigits:4});
+/* OMS 2006 peso para la edad (0 a 60 meses): [mes, -2DE, -1DE, mediana, +1DE, +2DE] */
+const WA={M:[[0,2.5,2.9,3.3,3.9,4.4],[1,3.4,3.9,4.5,5.1,5.8],[2,4.3,4.9,5.6,6.3,7.1],[3,5.0,5.7,6.4,7.2,8.0],[4,5.6,6.2,7.0,7.8,8.7],[5,6.0,6.7,7.5,8.4,9.3],[6,6.4,7.1,7.9,8.8,9.8],[7,6.7,7.4,8.3,9.2,10.3],[8,6.9,7.7,8.6,9.6,10.7],[9,7.1,8.0,8.9,9.9,11.0],[10,7.4,8.2,9.2,10.2,11.4],[11,7.6,8.4,9.4,10.5,11.7],[12,7.7,8.6,9.6,10.8,12.0],[13,7.9,8.8,9.9,11.0,12.3],[14,8.1,9.0,10.1,11.3,12.6],[15,8.3,9.2,10.3,11.5,12.8],[16,8.4,9.4,10.5,11.7,13.1],[17,8.6,9.6,10.7,12.0,13.4],[18,8.8,9.8,10.9,12.2,13.7],[19,8.9,10.0,11.1,12.5,13.9],[20,9.1,10.1,11.3,12.7,14.2],[21,9.2,10.3,11.5,12.9,14.5],[22,9.4,10.5,11.8,13.2,14.7],[23,9.5,10.7,12.0,13.4,15.0],[24,9.7,10.8,12.2,13.6,15.3],[27,10.1,11.3,12.7,14.3,16.1],[30,10.5,11.8,13.3,15.0,16.9],[33,10.9,12.3,13.8,15.6,17.6],[36,11.3,12.7,14.3,16.2,18.3],[39,11.6,13.1,14.8,16.8,19.0],[42,12.0,13.6,15.3,17.4,19.7],[45,12.4,14.0,15.8,18.0,20.5],[48,12.7,14.4,16.3,18.6,21.2],[51,13.1,14.8,16.8,19.2,21.9],[54,13.4,15.2,17.3,19.8,22.7],[57,13.7,15.6,17.8,20.4,23.4],[60,14.1,16.0,18.3,21.0,24.2]],
+F:[[0,2.4,2.8,3.2,3.7,4.2],[1,3.2,3.6,4.2,4.8,5.5],[2,3.9,4.5,5.1,5.8,6.6],[3,4.5,5.2,5.8,6.6,7.5],[4,5.0,5.7,6.4,7.3,8.2],[5,5.4,6.1,6.9,7.8,8.8],[6,5.7,6.5,7.3,8.2,9.3],[7,6.0,6.8,7.6,8.6,9.8],[8,6.3,7.0,7.9,9.0,10.2],[9,6.5,7.3,8.2,9.3,10.5],[10,6.7,7.5,8.5,9.6,10.9],[11,6.9,7.7,8.7,9.9,11.2],[12,7.0,7.9,8.9,10.1,11.5],[13,7.2,8.1,9.2,10.4,11.8],[14,7.4,8.3,9.4,10.6,12.1],[15,7.6,8.5,9.6,10.9,12.4],[16,7.7,8.7,9.8,11.1,12.6],[17,7.9,8.9,10.0,11.4,12.9],[18,8.1,9.1,10.2,11.6,13.2],[19,8.2,9.2,10.4,11.8,13.5],[20,8.4,9.4,10.6,12.1,13.7],[21,8.6,9.6,10.9,12.3,14.0],[22,8.7,9.8,11.1,12.5,14.3],[23,8.9,10.0,11.3,12.8,14.6],[24,9.0,10.2,11.5,13.0,14.8],[27,9.5,10.7,12.1,13.7,15.7],[30,10.0,11.2,12.7,14.4,16.5],[33,10.4,11.7,13.3,15.1,17.3],[36,10.8,12.2,13.9,15.8,18.1],[39,11.2,12.7,14.4,16.5,19.0],[42,11.6,13.1,15.0,17.2,19.8],[45,12.0,13.6,15.5,17.8,20.7],[48,12.3,14.0,16.1,18.5,21.5],[51,12.7,14.5,16.6,19.2,22.4],[54,13.0,14.9,17.2,19.9,23.2],[57,13.4,15.3,17.7,20.6,24.1],[60,13.7,15.8,18.2,21.2,24.9]]};
+/* OMS 2007 IMC para la edad (5 a 18 años) y talla mediana: [edad, -2DE, -1DE, mediana, +1DE, +2DE, talla mediana cm] */
+const BM={M:[[5,13.0,14.1,15.3,16.6,18.3,110.3],[6,13.0,14.1,15.3,16.8,18.5,116.0],[7,13.1,14.2,15.5,17.0,19.0,121.7],[8,13.3,14.4,15.7,17.4,19.7,127.3],[9,13.5,14.6,16.0,17.9,20.5,132.6],[10,13.7,14.9,16.4,18.5,21.4,137.8],[11,14.1,15.3,16.9,19.2,22.5,143.1],[12,14.5,15.8,17.5,19.9,23.6,149.1],[13,14.9,16.4,18.2,20.8,24.8,156.0],[14,15.5,17.0,19.0,21.8,25.9,163.2],[15,16.0,17.6,19.8,22.7,27.0,169.0],[16,16.5,18.2,20.5,23.5,27.9,172.9],[17,16.9,18.8,21.1,24.3,28.6,175.2],[18,17.3,19.2,21.7,24.9,29.2,176.1]],
+F:[[5,12.7,13.9,15.2,16.9,18.9,109.6],[6,12.7,13.9,15.3,17.0,19.2,115.1],[7,12.7,13.9,15.4,17.3,19.8,120.8],[8,12.9,14.1,15.7,17.7,20.6,126.6],[9,13.1,14.4,16.1,18.3,21.5,132.5],[10,13.5,14.8,16.6,19.0,22.6,138.6],[11,13.9,15.3,17.2,19.9,23.7,145.0],[12,14.4,16.0,18.0,20.8,25.0,151.2],[13,14.9,16.6,18.8,21.8,26.2,156.4],[14,15.4,17.2,19.6,22.7,27.3,159.8],[15,15.9,17.8,20.2,23.5,28.2,161.7],[16,16.2,18.2,20.7,24.1,28.9,162.5],[17,16.4,18.4,21.0,24.5,29.3,162.9],[18,16.5,18.6,21.3,24.8,29.5,163.1]]};
+const WL1=['por debajo de −2 DE (peso bajo para la edad)','entre −2 y −1 DE (riesgo de peso bajo)','dentro de ±1 DE (peso adecuado para la edad)','entre +1 y +2 DE (por encima de lo esperado)','por encima de +2 DE (verifica el peso)'],WL2=['delgadez','riesgo de delgadez','IMC adecuado para la edad','sobrepeso','obesidad'];
+function lerp(R,x){if(x<=R[0][0])return R[0].slice(1);const L=R.length;if(x>=R[L-1][0])return R[L-1].slice(1);let i=1;while(R[i][0]<x)i++;const A=R[i-1],B=R[i],t=(x-A[0])/(B[0]-A[0]);return A.slice(1).map((v,k)=>v+(B[k+1]-v)*t)}
+const zc=(v,t)=>v<t[0]?0:v<t[1]?1:v<=t[3]?2:v<=t[4]?3:4;
+function wrefHtml(){const a=num(S.age);if(!(a>=0&&a<=110))return'';const w=num(S.w),h=num(S.h),hm=h>=40&&h<=230?h/100:0,mo=Math.min(60,Math.round(a*12)),sx=S.sex?[S.sex]:['M','F'],nm={M:a<18?'Niño':'Hombre',F:a<18?'Niña':'Mujer'},ed=a<1?mo+(mo===1?' mes':' meses'):fmt(a)+(a===1?' año':' años');
+ let o='<b>Peso esperado para '+ed+'</b>';
+ if(a<5){sx.forEach(k=>{const t=lerp(WA[k],mo);o+='<br>'+(S.sex?'':nm[k]+': ')+'<b>'+f1(t[2])+' kg</b> (mediana) · adecuado de '+f1(t[1])+' a '+f1(t[3])+' kg · peso bajo si es menor de '+f1(t[0])+' kg';if(S.sex&&w>0)o+='<br>El peso escrito ('+f1(w)+' kg) está '+WL1[zc(w,t)]+'.'});if(!S.sex&&w>0)o+='<br>Elige el sexo para ver cómo está el peso escrito.'}
+ else if(a<18){sx.forEach(k=>{const t=lerp(BM[k],a),u=hm||t[5]/100,q=u*u;o+='<br>'+(S.sex?'':nm[k]+': ')+(hm?'para talla '+fmt(h)+' cm: ':'≈ ')+'<b>'+f1(t[2]*q)+' kg</b> (mediana) · adecuado de '+f1(t[1]*q)+' a '+f1(t[3]*q)+' kg'+(hm?'':' (con la talla mediana de '+fmt(Math.round(t[5]))+' cm)');if(S.sex&&w>0&&hm)o+='<br>IMC '+f1(w/(hm*hm))+' kg/m²: '+WL2[zc(w/(hm*hm),t)]+'.'});if(!hm)o+='<br>Escribe la talla para ver el rango exacto de este paciente.';else if(!S.sex&&w>0)o+='<br>Elige el sexo para clasificar el IMC.'}
+ else{if(hm){const q=hm*hm;o+='<br>para talla '+fmt(h)+' cm: <b>'+f1(18.5*q)+' a '+f1(24.9*q)+' kg</b> (peso normal, IMC 18,5 a 24,9)';if(w>0){const i=w/q;o+='<br>IMC '+f1(i)+' kg/m²: '+(i<18.5?'delgadez':i<25?'normal':i<30?'sobrepeso':'obesidad')+'.'}}else o+='<br>En adultos no existe un peso por edad: depende de la talla. Escribe la talla para ver el rango exacto (IMC 18,5 a 24,9).';if(a>=65)o+='<br>La Res. 2465 aplica hasta los 64 años; en mayores de 65 interpreta el IMC con criterio clínico.'}
+ return o+'<br><small>OMS 2006 (menores de 5 años) y OMS 2007 (5 a 17 años), adoptadas en Colombia por la Res. 2465 de 2016. La dosis se calcula con el peso real que escribas.</small>'}
+function mlInfo(r){const ml=r.Nt*S.vol;return{ml,kg:r.w>0?ml/r.w:0,nom:r.k*r.f/(r.p.c*10)}}
+function mlLine(p){try{const r=calc(p.id);if(r.blocks.length||r.Nt<=0)return'no adecuado para este paciente';const m=mlInfo(r);return'máx. '+fmt(m.ml)+' mL ('+fmt(m.kg)+' mL/kg)'}catch(e){return''}}
+function mlTable(){let h='<h3>Máximo en mL de cada anestésico para este paciente</h3><div class="res" style="margin:0"><table class="fi" style="margin-top:0">';
+ P.forEach(p=>{const r=calc(p.id),bad=r.blocks.length>0||r.Nt<=0,m=mlInfo(r);
+  h+='<tr><td>'+p.n+(p.id===S.pid?' <span class="tag ok">Elegido</span>':'')+'<br><small class="mut">'+(bad?'No adecuado para este paciente':fmt(r.Nt)+' carpules ('+Math.floor(r.Nt+1e-9)+' enteros) · '+fmt(r.Nt*r.cm)+' mg · '+fmt(m.kg)+' mL/kg')+'</small></td><td>'+(bad?'—':fmt(m.ml)+' mL')+'</td></tr>'});
+ return h+'</table><p class="mut" style="margin:10px 0 0;font-size:.85rem">Volumen total máximo en la sesión (carpules × '+fmt(S.vol)+' mL), según el peso y la situación del paciente, antes de restar los carpules ya administrados.</p></div>'}
 const kmax=p=>(p.f==='Lidocaína'&&p.v&&S.ref==='m')?{k:4.4,m:300}:{k:p.k,m:p.m};
 const norm=t=>String(t||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
 const esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -199,38 +228,63 @@ function rec(){
   if(age<12&&p.f==='Lidocaína'){s+=2;w.push('ofrece amplio margen de seguridad en niños')}
   if(has('emb')&&p.f==='Lidocaína'&&p.v==='epi'){s+=3;w.push('es la opción de elección en el embarazo')}
   if(has('hep')&&p.f==='Articaína'){s+=3;w.push('se hidroliza en plasma y depende menos del hígado')}
-  if(S.tech==='infm'&&p.f==='Articaína'){s+=2;w.push('tiene buena difusión en mandíbula, útil en infiltración mandibular')}
-  if(S.tech==='mul'&&p.f==='Bupivacaína'){s+=2;w.push('su acción prolongada es útil en procedimientos largos')}
+  if(tcur().art&&p.f==='Articaína'){s+=2;w.push('tiene buena difusión en mandíbula, útil en extracciones inferiores')}
+  if(tcur().lg&&p.f==='Bupivacaína'){s+=2;w.push('su acción prolongada es útil en procedimientos largos')}
   w.unshift(G[p.f]||'presentación que ingresaste');w.push('con el peso del paciente permite hasta '+Math.floor(r.N+1e-9)+' carpules');
   return{p,s,r,w}}).filter(Boolean).sort((a,b)=>b.s-a.s)}
 function recBox(){const R=rec();
  if(!R.length)return'<div class="al e">Ninguna presentación de la lista es adecuada o está disponible para este paciente. Revisa las condiciones, los carpules ya administrados o remite.</div>';
  const a=R[0],o=R.slice(1,3),n=x=>Math.floor(x.r.N+1e-9);
- return`<div class="rec"><div class="mut" style="margin:0">Recomendada para este paciente</div><div class="rn">${a.p.n}</div><div><b>Máximo:</b> ${n(a)} carpules (${fmt(a.r.N)} exactos, ${fmt(a.r.N*a.r.cm)} mg).</div><div><b>Mínimo:</b> ${fmt(tq(a.r).min)} carpule. <b>Recomendados:</b> ${fmt(tq(a.r).rec)} carpules (${fmt(tq(a.r).rec*S.vol)} mL).</div><div style="margin-top:6px"><b>Por qué la recomiendo:</b></div><ul style="margin:4px 0 0;padding-left:20px">${a.w.map(x=>'<li>'+x[0].toUpperCase()+x.slice(1)+'.</li>').join('')}</ul><div class="mut" style="margin:6px 0 0;font-size:.85rem">Mínimo y recomendados según la técnica elegida (volúmenes didácticos habituales). No existe un mínimo farmacológico oficial.</div>${S.pid===a.p.id?'<span class="tag ok">Coincide con tu elección</span>':'<button class="btn" style="margin-top:10px" data-use="'+a.p.id+'">Usar esta</button>'}${o.length?'<div class="mut" style="margin:12px 0 0">Alternativas: '+o.map(x=>x.p.n+' ('+n(x)+')').join('; ')+'</div>':''}</div>`}
+ return`<div class="rec"><div class="mut" style="margin:0">Recomendada para este paciente</div><div class="rn">${a.p.n}</div><div><b>Máximo:</b> ${n(a)} carpules (${fmt(a.r.N)} exactos = ${fmt(a.r.N*S.vol)} mL = ${fmt(a.r.N*a.r.cm)} mg).</div>${mnLine(a.r)}<div style="margin-top:6px"><b>Por qué la recomiendo:</b></div><ul style="margin:4px 0 0;padding-left:20px">${a.w.map(x=>'<li>'+x[0].toUpperCase()+x.slice(1)+'.</li>').join('')}</ul><div class="mut" style="margin:6px 0 0;font-size:.85rem">Mínimo según el procedimiento elegido (valores didácticos habituales). No existe un mínimo farmacológico oficial.</div>${S.pid===a.p.id?'<span class="tag ok">Coincide con tu elección</span>':'<button class="btn" style="margin-top:10px" data-use="'+a.p.id+'">Usar esta</button>'}${o.length?'<div class="mut" style="margin:12px 0 0">Alternativas: '+o.map(x=>x.p.n+' ('+n(x)+')').join('; ')+'</div>':''}</div>`}
 function addCu(){const f=S.cuf,c=num(f.c),k=num(f.k),m=num(f.m),d=num(f.d),a=num(f.a)||0;
  if(!(c>0)||!(k>0)){S.cuErr='Escribe al menos la concentración (%) y los mg/kg.';render();return}
  if((f.v==='epi'||f.v==='lev')&&!(d>0)){S.cuErr='Indica la dilución del vasoconstrictor (por ejemplo 100000 para 1:100.000).';render();return}
  const nm=esc(f.name.trim()||'Mi anestésico'),VN={epi:'epinefrina',lev:'levonordefrina',fel:'felipresina'};
  const p={id:'cu',f:nm,n:nm+' '+f.c+'%'+(f.v?' + '+VN[f.v]+(f.v==='fel'?'':' 1:'+fmt(d)):'')+' (agregado por ti)',c,v:f.v||null,d,k,m:m>0?m:Infinity,a};
  const i=P.findIndex(x=>x.id==='cu');if(i<0)P.push(p);else P[i]=p;S.pid='cu';S.cuErr='';render()}
-const T=[{id:'inf',t:'Infiltración maxilar (vestibular)',min:.6,rec:1.2},{id:'infm',t:'Infiltración mandibular (vestibular)',min:.6,rec:1.2},{id:'bai',t:'Bloqueo del nervio alveolar inferior',min:1.5,rec:1.8},{id:'pal',t:'Palatina o nasopalatina',min:.2,rec:.4},{id:'lig',t:'Intraligamentaria',min:.2,rec:.4},{id:'mul',t:'Varios cuadrantes o procedimiento largo',min:1.8,rec:3.6}];
-function tq(r){const t=T.find(x=>x.id===S.tech)||T[0];return{min:Math.min(t.min/S.vol,r.N),rec:Math.min(t.rec/S.vol,r.N)}}
+const T=[
+{id:'exas',g:'Extracción simple',s:'Anterior superior (incisivos y caninos)',lo:.5,hi:1},
+{id:'exps',g:'Extracción simple',s:'Posterior superior (premolares y molares)',lo:1,hi:2},
+{id:'exai',g:'Extracción simple',s:'Anterior inferior (incisivos y caninos)',lo:.5,hi:1.5,art:1},
+{id:'expi',g:'Extracción simple',s:'Posterior inferior (premolares y molares)',lo:1.5,hi:3,art:1},
+{id:'enas',g:'Endodoncia (tratamiento de conductos)',s:'Anterior superior (incisivos y caninos)',lo:1,hi:1.5},
+{id:'enps',g:'Endodoncia (tratamiento de conductos)',s:'Posterior superior (premolares y molares)',lo:1,hi:2},
+{id:'enai',g:'Endodoncia (tratamiento de conductos)',s:'Anterior inferior (incisivos y caninos)',lo:1,hi:2},
+{id:'enpi',g:'Endodoncia (tratamiento de conductos)',s:'Posterior inferior (premolares y molares)',lo:1.5,hi:3},
+{id:'opa',g:'Operatoria (resina u obturación de caries)',s:'Anterior (superior o inferior)',lo:.5,hi:1},
+{id:'ops',g:'Operatoria (resina u obturación de caries)',s:'Posterior superior',lo:.5,hi:1.5},
+{id:'opi',g:'Operatoria (resina u obturación de caries)',s:'Posterior inferior',lo:1,hi:2},
+{id:'rs',g:'Raspado y alisado radicular (por cuadrante)',s:'Cuadrante superior',lo:1,hi:2},
+{id:'ri',g:'Raspado y alisado radicular (por cuadrante)',s:'Cuadrante inferior',lo:1.5,hi:2.5},
+{id:'coa',g:'Preparación para corona o prótesis fija',s:'Anterior (superior o inferior)',lo:1,hi:1.5},
+{id:'cps',g:'Preparación para corona o prótesis fija',s:'Posterior superior',lo:1,hi:2},
+{id:'cpi',g:'Preparación para corona o prótesis fija',s:'Posterior inferior',lo:1.5,hi:3},
+{id:'tms',g:'Cirugía de tercer molar',s:'Superior',lo:1,hi:2,lg:1},
+{id:'tmi',g:'Cirugía de tercer molar',s:'Inferior',lo:2,hi:4,lg:1},
+{id:'ims',g:'Colocación de implante',s:'Maxilar superior',lo:1,hi:2.5,lg:1},
+{id:'imi',g:'Colocación de implante',s:'Mandíbula',lo:1.5,hi:3,lg:1},
+{id:'otro',g:'Otro',s:'Otro procedimiento (no está en la lista)',other:1}];
+T.forEach(x=>{x.t=x.other?x.s:x.g+': '+x.s});
+const tcur=()=>T.find(x=>x.id===S.tech)||T[0];
+const tname=()=>{const x=tcur();return x.other?(S.procOther.trim()||'Otro procedimiento (sin escribir)'):x.t};
+function tq(r){const x=tcur();return{min:x.other?null:Math.min(x.lo,r.N)}}
+function mnLine(r){const q=tq(r);return q.min===null?'':'<div><b>Mínimo:</b> '+fmt(q.min)+' carpules ('+fmt(q.min*S.vol)+' mL).</div>'}
 const FI={Lidocaína:{ini:'2 a 3 min',pul:'≈ 60 min con vasoconstrictor; 5 a 10 min sin él',bl:'3 a 5 h con vasoconstrictor; 1 a 2 h sin él',vm:'1,6 h',emb:'B',met:'Hepático'},Mepivacaína:{ini:'1,5 a 2 min',pul:'≈ 60 min con vasoconstrictor; 20 a 40 min la de 3 % simple',bl:'3 a 5 h con vasoconstrictor; 2 a 3 h simple',vm:'1,9 h',emb:'C',met:'Hepático'},Articaína:{ini:'1 a 3 min',pul:'≈ 60 a 75 min',bl:'3 a 4 h',vm:'≈ 0,5 h',emb:'C',met:'Plasmático (esterasas) y hepático'},Prilocaína:{ini:'2 a 4 min',pul:'60 a 90 min con vasoconstrictor; 10 a 15 min la simple en infiltración',bl:'3 a 8 h con vasoconstrictor; 1,5 a 2 h simple',vm:'1,6 h',emb:'B',met:'Hepático, renal y pulmonar'},Bupivacaína:{ini:'6 a 10 min',pul:'≈ 90 a 180 min',bl:'4 a 9 h',vm:'2,7 h',emb:'C',met:'Hepático'}};
 function ficha(p){const f=FI[p.f];if(!f)return'';return'<h3>Ficha del anestésico</h3><div class="res" style="margin:0"><table class="fi" style="margin-top:0"><tr><td>Inicio de acción</td><td>'+f.ini+'</td></tr><tr><td>Duración pulpar</td><td>'+f.pul+'</td></tr><tr><td>Tejidos blandos</td><td>'+f.bl+'</td></tr><tr><td>Vida media</td><td>'+f.vm+'</td></tr><tr><td>Metabolismo</td><td>'+f.met+'</td></tr><tr><td>Embarazo (categoría FDA histórica)</td><td>'+f.emb+'</td></tr></table></div>'}
-const CASES=[[6,20,'M',[],'inf'],[45,82,'M',['card'],'bai'],[29,58,'F',['emb'],'inf'],[70,65,'F',['hta','hep'],'bai'],[35,95,'M',['dm','asma'],'infm'],[52,78,'F',['bb','anti'],'inf'],[10,32,'M',['asma'],'inf'],[17,60,'F',['ansi'],'bai']];
-function loadCase(){const c=CASES[Math.floor(Math.random()*CASES.length)];Object.assign(S,{name:'Caso de práctica',age:String(c[0]),w:String(c[1]),sex:c[2],cond:new Set(c[3]),tech:c[4],pid:null,practice:true,guess:'',plan:'',prev:'',alg:'',algY:false,sup:'',other:'',meds:'',asa:'',sbp:'',dbp:'',glu:''});render()}
+const CASES=[[6,20,'M',[],'ops'],[45,82,'M',['card'],'expi'],[29,58,'F',['emb'],'exps'],[70,65,'F',['hta','hep'],'enpi'],[35,95,'M',['dm','asma'],'tmi'],[52,78,'F',['bb','anti'],'enps'],[10,32,'M',['asma'],'ops'],[17,60,'F',['ansi'],'expi']];
+function loadCase(){const c=CASES[Math.floor(Math.random()*CASES.length)];Object.assign(S,{name:'Caso de práctica',age:String(c[0]),w:String(c[1]),sex:c[2],cond:new Set(c[3]),tech:c[4],procOther:'',pid:null,practice:true,guess:'',plan:'',prev:'',alg:'',algY:false,sup:'',other:'',meds:'',asa:'',sbp:'',dbp:'',glu:'',h:''});render()}
 function practiceBox(r){if(!S.practice)return'';return'<h3>Modo práctica</h3><div class="res" style="margin:0"><label class="fld" style="margin-top:0">¿Cuántos carpules máximos calculaste a mano con el anestésico elegido?<input data-t="guess" inputmode="decimal" autocomplete="off" value="'+esc(S.guess)+'"></label><button class="btn" data-chk="1">Comprobar</button><div id="chkout"></div></div>'}
 function chk(){const r=calc(),mx=Math.floor(r.N+1e-9),g=num(S.guess);$('#chkout').innerHTML=g===mx?'<div class="vd ok"><b>Correcto</b><div>El máximo disponible es '+mx+' carpules.</div></div>':'<div class="vd e"><b>No coincide</b><div>Escribiste '+(isNaN(g)?'un valor no válido':fmt(g))+' y el máximo calculado es '+mx+'. Revisa en la tabla la dosis máxima, los mg por carpule y el límite del vasoconstrictor.</div></div>'}
 function summary(r){const t=T.find(x=>x.id===S.tech)||T[0],b=rec()[0],q=tq(r),cs=C.filter(c=>S.cond.has(c.id)).map(c=>c.t).concat(S.other.trim()?[S.other.trim()]:[]);
- return['Paciente: '+(S.name.trim()||'sin nombre')+' | '+(S.sex==='F'?'femenino':S.sex==='M'?'masculino':'sexo no indicado')+' | '+S.age+' años | '+S.w+' kg','ASA: '+(S.asa||'no indicado')+' | PA: '+(S.sbp&&S.dbp?S.sbp+'/'+S.dbp+' mmHg':'no indicada')+' | Glucemia: '+(S.glu?S.glu+' mg/dL':'no indicada'),'Condiciones: '+(cs.join('; ')||'ninguna'),'Alergias: '+(S.algY?(S.alg.trim()||'sí, sin detallar'):'no refiere'),'Medicamentos y suplementos: '+([S.meds,S.sup].filter(x=>x.trim()).join('; ')||'ninguno'),'Técnica: '+t.t,'Anestésico elegido: '+r.p.n,'Dosis máxima: '+fmt(r.mg)+' mg; carpule de '+fmt(S.vol)+' mL = '+fmt(r.cm)+' mg','Carpules disponibles: máximo '+Math.floor(r.N+1e-9)+'; mínimo '+fmt(q.min)+'; recomendados '+fmt(q.rec),'Anestésico recomendado: '+(b?b.p.n+' ('+b.w.join('; ')+')':'ninguno disponible')].join('\n')}
-function summaryBox(r){return'<h3>Resumen para copiar</h3><textarea id="sum" readonly rows="10">'+esc(summary(r))+'</textarea><button class="btn ghost" data-copy="1" style="margin-top:8px">Copiar resumen</button>'}
+ return['Paciente: '+(S.name.trim()||'sin nombre')+' | '+(S.sex==='F'?'femenino':S.sex==='M'?'masculino':'sexo no indicado')+' | '+S.age+' años | '+S.w+' kg','ASA: '+(S.asa||'no indicado')+' | PA: '+(S.sbp&&S.dbp?S.sbp+'/'+S.dbp+' mmHg':'no indicada')+' | Glucemia: '+(S.glu?S.glu+' mg/dL':'no indicada'),'Condiciones: '+(cs.join('; ')||'ninguna'),'Alergias: '+(S.algY?(S.alg.trim()||'sí, sin detallar'):'no refiere'),'Medicamentos y suplementos: '+([S.meds,S.sup].filter(x=>x.trim()).join('; ')||'ninguno'),'Procedimiento: '+tname(),'Anestésico elegido: '+r.p.n,'Dosis máxima por kilo: '+fmt(r.k*r.f)+' mg/kg = '+fmt(r.k*r.f/(r.p.c*10))+' mL/kg','Dosis máxima: '+fmt(r.mg)+' mg ('+fmt(r.mg/(r.p.c*10))+' mL); carpule de '+fmt(S.vol)+' mL = '+fmt(r.cm)+' mg','Máximo real para este paciente: '+fmt(r.Nt*S.vol)+' mL ('+fmt(r.Nt*S.vol/r.w)+' mL/kg)','Carpules disponibles: máximo '+Math.floor(r.N+1e-9)+' carpules ('+fmt(r.N*S.vol)+' mL)'+(q.min===null?'':'; mínimo '+fmt(q.min)+' carpules ('+fmt(q.min*S.vol)+' mL)'),'Anestésico recomendado: '+(b?b.p.n+' ('+b.w.join('; ')+')':'ninguno disponible')].join('\n')}
+function summaryBox(r){return'<h3>Resumen para copiar</h3><textarea id="sum" readonly rows="13">'+esc(summary(r))+'</textarea><button class="btn ghost" data-copy="1" style="margin-top:8px">Copiar resumen</button>'}
 function verdict(r){const R=rec(),i=R.findIndex(x=>x.p.id===r.p.id),me=R[i],best=R[0],bad=r.blocks.length>0,gone=!bad&&r.N<=0,pl=num(S.plan),mx=Math.floor(r.N+1e-9),li=x=>'<ul style="margin:6px 0 0;padding-left:20px">'+x.map(y=>'<li>'+y+'</li>').join('')+'</ul>';
  let a;
  if(bad)a=['e','Anestésico INAPROPIADO','<div>Por qué es inapropiado:</div>'+li(r.blocks)+(best?'<div style="margin-top:8px">Alternativa sugerida: <b>'+best.p.n+'</b>, porque '+best.w.slice(0,2).join(' y ')+'.</div>':'')];
  else if(gone)a=['e','Anestésico INAPROPIADO','<div>Por qué es inapropiado: con los carpules ya administrados se alcanzó el máximo y no corresponde administrar más.</div>'];
  else if(i>=0&&i<3)a=['ok','Anestésico APROPIADO','<div>Por qué es apropiado: no tiene contraindicaciones para este paciente y ocupa el puesto '+(i+1)+' entre las opciones evaluadas.</div>'+li(me.w)];
  else a=['w','Anestésico ACEPTABLE CON RESERVAS','<div>Por qué solo es aceptable: no tiene contraindicaciones, pero hay opciones mejor indicadas. La recomendada es <b>'+(best?best.p.n:'otra')+'</b>'+(best?', porque '+best.w.slice(0,2).join(' y ')+'.':'.')+'</div>'+(me?'<div style="margin-top:8px">Lo que sí ofrece este anestésico:</div>'+li(me.w):'')];
- const d=!(pl>0)?['w','Dosis sin evaluar','No indicaste cuántos carpules piensas administrar.']:(bad||gone)?['e','Dosis INAPROPIADA','Con este anestésico no debe administrarse ningún carpule más a este paciente.']:pl>r.N+1e-9?['e','Dosis INAPROPIADA',fmt(pl)+' carpules superan el máximo disponible de '+mx+' (dosis máxima '+fmt(r.mg)+' mg'+(r.used?', con '+fmt(r.used)+' carpules ya administrados':'')+'); el límite lo marca el '+(r.p.v?r.lim:'anestésico')+'.']:['ok','Dosis APROPIADA',fmt(pl)+' carpules están dentro del máximo disponible de '+mx+' (dosis máxima '+fmt(r.mg)+' mg).'+(pl>tq(r).rec+1e-9?' Supera lo recomendado para la técnica ('+fmt(tq(r).rec)+'), aunque está dentro del máximo.':'')];
+ const d=!(pl>0)?['w','Dosis sin evaluar','No indicaste cuántos carpules piensas administrar.']:(bad||gone)?['e','Dosis INAPROPIADA','Con este anestésico no debe administrarse ningún carpule más a este paciente.']:pl>r.N+1e-9?['e','Dosis INAPROPIADA',fmt(pl)+' carpules ('+fmt(pl*S.vol)+' mL) superan el máximo disponible de '+mx+' carpules (dosis máxima '+fmt(r.mg)+' mg = '+fmt(r.mg/(r.p.c*10))+' mL'+(r.used?', con '+fmt(r.used)+' carpules ya administrados':'')+'); el límite lo marca el '+(r.p.v?r.lim:'anestésico')+'.']:['ok','Dosis APROPIADA',fmt(pl)+' carpules ('+fmt(pl*S.vol)+' mL) están dentro del máximo disponible de '+mx+' carpules (dosis máxima '+fmt(r.mg)+' mg = '+fmt(r.mg/(r.p.c*10))+' mL).'];
  return'<h3>Veredicto final</h3>'+[a,d].map(x=>'<div class="vd '+x[0]+'"><b>'+x[1]+'</b><div>'+x[2]+'</div></div>').join('')}
 function verdictOld(r){const R=rec(),top=R.slice(0,3).some(x=>x.p.id===r.p.id),pl=num(S.plan),mx=Math.floor(r.N+1e-9),bad=r.blocks.length>0;
  const a=bad?['e','Anestésico INDEBIDO',r.blocks.join(' ')]:top?['ok','Anestésico DEBIDO','Es adecuado para este paciente y está entre las mejores opciones de la lista.']:['w','Anestésico ACEPTABLE CON RESERVAS','No tiene contraindicaciones, pero hay opciones mejor indicadas para este paciente (ver recomendación).'];
@@ -240,6 +294,8 @@ function s0(){return`<h2>Datos del paciente</h2><p class="mut">La dosis se calcu
 <label class="fld">Nombre del paciente (opcional)<input data-t="name" autocomplete="off" value="${esc(S.name)}" placeholder="Ej. María Pérez"></label>
 <label class="fld">Edad (años)<input id="age" inputmode="decimal" autocomplete="off" value="${S.age}" placeholder="Ej. 8"></label>
 <label class="fld">Peso (kg)<input id="w" inputmode="decimal" autocomplete="off" value="${S.w}" placeholder="Ej. 25"></label>
+<label class="fld">Talla (cm) <small class="mut">opcional, afina el peso esperado</small><input id="h" inputmode="decimal" autocomplete="off" value="${S.h}" placeholder="Ej. 130"></label>
+<div class="wref" id="wref">${wrefHtml()}</div>
 <h3>Sexo del paciente</h3>
 <label class="opt"><input type="radio" name="sx" data-sx="F" ${S.sex==='F'?'checked':''}><span><b>Femenino</b></span></label>
 <label class="opt"><input type="radio" name="sx" data-sx="M" ${S.sex==='M'?'checked':''}><span><b>Masculino</b></span></label>
@@ -257,16 +313,18 @@ ${C.map(c=>`<label class="opt"><input type="checkbox" data-c="${c.id}" ${S.cond.
 ${S.algY?'<label class="fld" style="margin-top:0"><input data-t="alg" autocomplete="off" value="'+esc(S.alg)+'" placeholder="Ej. penicilina, lidocaína, sulfitos, látex, propóleo"></label>':''}
 <h3>Otros medicamentos que toma</h3><label class="fld" style="margin-top:0"><input data-t="meds" autocomplete="off" value="${esc(S.meds)}" placeholder="Ej. losartán, metformina (vacío si ninguno)"></label>
 <h3>Suplementos o multivitamínicos</h3><label class="fld" style="margin-top:0"><input data-t="sup" autocomplete="off" value="${esc(S.sup)}" placeholder="Ej. multivitamínico, omega 3 (vacío si no consume)"></label>
-<div class="nav"><button class="btn ghost" data-go="0">Atrás</button><button class="btn" data-go="2">Continuar</button></div>`}
+<div class="nav"><button class="btn ghost" data-go="1">Atrás</button><button class="btn" data-go="3">Continuar</button></div>`}
 function s2(){const age=num(S.age);let g='';const R0=rec(),rid=R0.length?R0[0].p.id:null;
  P.forEach((p,i)=>{if(!i||P[i-1].f!==p.f)g+='<h3>'+p.f+'</h3>';const{k,m}=kmax(p);
-  g+=`<label class="opt"><input type="radio" name="an" data-p="${p.id}" ${S.pid===p.id?'checked':''}><span><b>${p.n}</b><small>${fmt(p.c*10*S.vol)} mg por carpule · ${fmt(k)} mg/kg · tope ${fmt(m)} mg</small>${rid===p.id?'<span class="tag ok">Recomendada</span> ':''}${age<p.a?'<span class="tag">No recomendada en menores de '+p.a+' años</span>':''}</span></label>`});
+  g+=`<label class="opt"><input type="radio" name="an" data-p="${p.id}" ${S.pid===p.id?'checked':''}><span><b>${p.n}</b><small>${fmt(p.c*10*S.vol)} mg por carpule · ${fmt(k)} mg/kg · tope ${fmt(m)} mg<br>Para tu paciente: ${mlLine(p)}</small>${rid===p.id?'<span class="tag ok">Recomendada</span> ':''}${age<p.a?'<span class="tag">No recomendada en menores de '+p.a+' años</span>':''}</span></label>`});
  return`<h2>Anestésico y vasoconstrictor</h2><p class="mut">Elige la presentación que vas a usar.</p>${recBox()}
 <h3>Dosis de lidocaína con vasoconstrictor</h3>
 <label class="opt"><input type="radio" name="ref" data-r="f" ${S.ref==='f'?'checked':''}><span><b>7 mg/kg, tope 500 mg</b><small>Ficha técnica / ADA</small></span></label>
 <label class="opt"><input type="radio" name="ref" data-r="m" ${S.ref==='m'?'checked':''}><span><b>4,4 mg/kg, tope 300 mg</b><small>Malamed (más conservadora)</small></span></label>
-<h3>Técnica de anestesia</h3>
-${T.map(t=>'<label class="opt"><input type="radio" name="tq" data-tq="'+t.id+'" '+(S.tech===t.id?'checked':'')+'><span><b>'+t.t+'</b><small>Volumen habitual: '+fmt(t.min)+' a '+fmt(t.rec)+' mL</small></span></label>').join('')}
+<h3>Procedimiento: carpules recomendados</h3>
+<p class="mut" style="margin:0 0 6px">Elige el procedimiento que vas a realizar. Los valores son orientativos y didácticos.</p>
+${T.map((t,i)=>(!i||T[i-1].g!==t.g?'<h3>'+t.g+'</h3>':'')+'<label class="opt"><input type="radio" name="tq" data-tq="'+t.id+'" '+(S.tech===t.id?'checked':'')+'><span><b>'+t.s+'</b><small>'+(t.other?'Escríbelo en el cuadro de abajo':'Recomendados: '+fmt(t.lo)+' a '+fmt(t.hi)+' carpules ('+fmt(t.lo*S.vol)+' a '+fmt(t.hi*S.vol)+' mL)')+'</small></span></label>').join('')}
+${tcur().other?'<label class="fld" style="margin-top:0">Escribe el procedimiento<input data-t="procOther" autocomplete="off" value="'+esc(S.procOther)+'" placeholder="Ej. frenectomía, drenaje de absceso"></label>':''}
 <h3>Carpules ya administrados en esta sesión (opcional)</h3><label class="fld" style="margin-top:0"><input data-t="prev" inputmode="decimal" autocomplete="off" value="${esc(S.prev)}" placeholder="Ej. 1"></label>
 <h3>Volumen del carpule</h3>
 <label class="opt"><input type="radio" name="vol" data-v="1.8" ${S.vol===1.8?'checked':''}><span><b>1,8 mL</b></span></label>
@@ -282,22 +340,27 @@ ${T.map(t=>'<label class="opt"><input type="radio" name="tq" data-tq="'+t.id+'" 
 <label class="fld">Edad mínima recomendada, en años (opcional)<input data-f="a" inputmode="decimal" value="${esc(S.cuf.a)}" placeholder="Ej. 4"></label>
 <button class="btn" data-cu="1">Usar mi anestésico</button>${S.cuErr?'<div class="al e">'+S.cuErr+'</div>':''}</div>
 <h3>Carpules que piensas administrar (opcional)</h3><label class="fld" style="margin-top:0"><input data-t="plan" inputmode="decimal" autocomplete="off" value="${esc(S.plan)}" placeholder="Ej. 3"></label>
-<div class="nav"><button class="btn ghost" data-go="1">Atrás</button><button class="btn" data-go="3" ${S.pid?'':'disabled'}>Calcular</button></div>`}
+<div class="nav"><button class="btn ghost" data-go="2">Atrás</button><button class="btn" data-go="4" ${S.pid?'':'disabled'}>Calcular</button></div>`}
 function s3(){const r=calc(),n=Math.floor(r.N+1e-9),p=r.p;
  let h=`<h2>Resultado${S.name.trim()?' de '+esc(S.name.trim()):''}</h2><p class="mut" style="margin:0 0 4px">${S.sex==='F'?'Femenino':S.sex==='M'?'Masculino':'Sexo no indicado'}, ${fmt(num(S.age))} años, ${fmt(num(S.w))} kg</p><div class="res"><div class="mut" style="margin:0">${p.n}</div>
 <div class="big">${n} ${n===1?'carpule':'carpules'}</div>
-<div class="mut" style="margin:0">Máximo entero. Equivale a ${fmt(r.N)} carpules (${fmt(r.N*r.cm)} mg).</div>${pills(r.N)}`;
+<div class="mut" style="margin:0">Máximo entero. Equivale a ${fmt(r.N)} carpules = ${fmt(r.N*S.vol)} mL = ${fmt(r.N*r.cm)} mg.</div>${pills(r.N)}`;
  if(r.blocks.length)h+=r.blocks.map(b=>'<div class="al e">'+b+'</div>').join('');
  else if(p.v&&r.V<r.A)h+='<div class="al w">El límite lo marca el vasoconstrictor, no el anestésico.</div>';
- h+=`<table><tr><td>Dosis máxima del anestésico<br><small class="mut">mín(${fmt(r.k)} mg/kg × ${fmt(r.w)} kg = ${fmt(r.byW)} mg; tope ${fmt(r.m)} mg)${r.f<1?' × '+r.f:''}</small></td><td>${fmt(r.mg)} mg</td></tr>
-<tr><td>Contenido por carpule<br><small class="mut">${p.c}% × 10 × ${fmt(S.vol)} mL</small></td><td>${fmt(r.cm)} mg</td></tr>
-<tr><td>Carpules según el anestésico<br><small class="mut">${fmt(r.mg)} ÷ ${fmt(r.cm)}</small></td><td>${fmt(r.A)}</td></tr>`;
- if(p.v)h+=`<tr><td>Carpules según el vasoconstrictor<br><small class="mut">${fmt(r.vm)} ${r.u} máx ÷ ${fmt(r.vp)} ${r.u} por carpule</small></td><td>${fmt(r.V)}</td></tr>`;
- h+=`${r.used?'<tr><td>Ya administrados en la sesión<br><small class="mut">Máximo total '+fmt(r.Nt)+' menos '+fmt(r.used)+'</small></td><td>'+fmt(r.used)+'</td></tr>':''}<tr><td>Límite que manda</td><td>${p.v?r.lim:'anestésico'}</td></tr><tr><td>Carpules mínimos<br><small class="mut">${(T.find(x=>x.id===S.tech)||T[0]).t}</small></td><td>${fmt(tq(r).min)}</td></tr><tr><td>Carpules recomendados</td><td>${fmt(tq(r).rec)}</td></tr></table></div>`;
- h+=ficha(p)+recBox();if(r.notes.length)h+='<h3>Consideraciones clínicas</h3>'+r.notes.map(x=>'<div class="al w">'+x+'</div>').join('');
- h+=verdict(r)+summaryBox(r)+tmBox();h+=`<div class="nav"><button class="btn ghost" data-go="2">Cambiar anestésico</button><button class="btn" id="reset">Nuevo paciente</button></div>`;return h}
+ const M=mlInfo(r),q=tq(r),cmL=p.c*10;
+ h+=`<table><tr><td>Dosis máxima por kilo (según la situación del paciente)<br><small class="mut">${fmt(r.k)} mg/kg${r.f<1?' × '+r.f+' = '+fmt(r.k*r.f)+' mg/kg':''} ÷ ${fmt(cmL)} mg/mL</small></td><td>${fmt(M.nom)} mL/kg<br>${fmt(r.k*r.f)} mg/kg</td></tr>
+<tr><td>Concentración del anestésico<br><small class="mut">${p.c}% × 10</small></td><td>${fmt(cmL)} mg/mL</td></tr>
+<tr><td>Dosis máxima total del anestésico<br><small class="mut">mín(${fmt(r.k)} mg/kg × ${fmt(r.w)} kg = ${fmt(r.byW)} mg; tope ${fmt(r.m)} mg)${r.f<1?' × '+r.f:''}</small></td><td>${fmt(r.mg)} mg<br>${fmt(r.mg/cmL)} mL</td></tr>
+<tr><td>Contenido por carpule<br><small class="mut">${fmt(cmL)} mg/mL × ${fmt(S.vol)} mL</small></td><td>${fmt(r.cm)} mg<br>${fmt(S.vol)} mL</td></tr>
+<tr><td>Carpules según el anestésico<br><small class="mut">${fmt(r.mg)} mg ÷ ${fmt(r.cm)} mg</small></td><td>${fmt(r.A)} carpules</td></tr>`;
+ if(p.v)h+=`<tr><td>Carpules según el vasoconstrictor<br><small class="mut">${fmt(r.vm)} ${r.u} máx ÷ ${fmt(r.vp)} ${r.u} por carpule</small></td><td>${fmt(r.V)} carpules</td></tr>`;
+ h+=`<tr><td>Límite que manda</td><td>${p.v?r.lim:'anestésico'}</td></tr>
+<tr><td><b>Máximo real para este paciente</b><br><small class="mut">${fmt(r.Nt)} carpules × ${fmt(S.vol)} mL; ÷ ${fmt(r.w)} kg</small></td><td>${fmt(M.ml)} mL<br>${fmt(M.kg)} mL/kg</td></tr>${r.used?'<tr><td>Ya administrados en la sesión<br><small class="mut">Máximo total '+fmt(r.Nt)+' menos '+fmt(r.used)+' carpules</small></td><td>'+fmt(r.used)+' carpules<br>'+fmt(r.used*S.vol)+' mL</td></tr><tr><td>Todavía disponibles</td><td>'+fmt(r.N)+' carpules<br>'+fmt(r.N*S.vol)+' mL</td></tr>':''}
+${q.min===null?'':'<tr><td>Carpules mínimos<br><small class="mut">'+esc(tname())+'</small></td><td>'+fmt(q.min)+' carpules<br>'+fmt(q.min*S.vol)+' mL</td></tr>'}</table></div>`;
+ h+=mlTable()+ficha(p)+recBox();if(r.notes.length)h+='<h3>Consideraciones clínicas</h3>'+r.notes.map(x=>'<div class="al w">'+x+'</div>').join('');
+ h+=verdict(r)+summaryBox(r)+tmBox();h+=`<button class="btn" data-go="1" style="width:100%;margin-top:18px">Práctica: regla de tres</button><div class="nav"><button class="btn ghost" data-go="3">Cambiar anestésico</button><button class="btn" id="reset">Nuevo paciente</button></div>`;return h}
 function render(){
- $('#app').innerHTML='<div class="bar">'+STEPS.map((t,i)=>'<div class="'+(i<S.step?'done':i===S.step?'cur':'')+'"><i></i>'+t+'</div>').join('')+'</div>'+[s0,s1,s2,s3][S.step]();
+ $('#app').innerHTML='<div class="bar">'+STEPS.map((t,i)=>'<div class="'+(i<S.step?'done':i===S.step?'cur':'')+'"><i></i>'+t+'</div>').join('')+'</div>'+[s0,s4,s1,s2,s3][S.step]();
  if(S._s!==S.step){window.scrollTo(0,0);S._s=S.step}}
 document.addEventListener('click',e=>{
  const b=e.target.closest('[data-go]');if(b&&!b.disabled){S.step=+b.dataset.go;render()}
@@ -307,9 +370,9 @@ document.addEventListener('click',e=>{
  if(e.target.dataset.copy){const ta=$('#sum'),bt=e.target,ok=()=>{bt.textContent='Copiado'},no=()=>{ta.focus();ta.select();let g=false;try{g=document.execCommand('copy')}catch(_){}bt.textContent=g?'Copiado':'Texto seleccionado: cópialo manualmente'};
   try{navigator.clipboard.writeText(ta.value).then(ok,no)}catch(_){no()}}
  const cb=e.target.closest('[data-cu]');if(cb)addCu();const u=e.target.closest('[data-use]');if(u){S.pid=u.dataset.use;render()}
- if(e.target.id==='reset'){tmReset();S.step=0;S.age=S.w='';S.cond=new Set();S.pid=null;S.other=S.alg=S.sup=S.plan=S.name=S.sex='';S.prev=S.sbp=S.dbp=S.glu=S.asa=S.meds=S.guess='';S.practice=false;S.algY=false;render()}});
+ if(e.target.id==='reset'){tmReset();S.step=0;S.age=S.w='';S.cond=new Set();S.pid=null;S.other=S.alg=S.sup=S.plan=S.name=S.sex=S.procOther='';S.prev=S.sbp=S.dbp=S.glu=S.asa=S.meds=S.guess='';S.practice=false;S.algY=false;S.h='';S.pr=null;S.prCmp=false;render()}});
 document.addEventListener('input',e=>{
- if(e.target.id==='age'||e.target.id==='w'){S[e.target.id]=e.target.value;$('#next').disabled=!okPt()}
+ if(e.target.id==='age'||e.target.id==='w'||e.target.id==='h'){S[e.target.id]=e.target.value;$('#next').disabled=!okPt();const wr=$('#wref');if(wr)wr.innerHTML=wrefHtml()}
  if(e.target.dataset.t)S[e.target.dataset.t]=e.target.value;
  if(e.target.dataset.f)S.cuf[e.target.dataset.f]=e.target.value});
 document.addEventListener('change',e=>{const t=e.target,d=t.dataset;
@@ -318,8 +381,47 @@ document.addEventListener('change',e=>{const t=e.target,d=t.dataset;
  else if(d.r){S.ref=d.r;render()}
  else if(d.v){S.vol=+d.v;render()}
  else if(d.al!==undefined){S.algY=d.al==='1';render()}
- else if(d.sx){S.sex=d.sx}
+ else if(d.sx){S.sex=d.sx;const wr=$('#wref');if(wr)wr.innerHTML=wrefHtml()}
  else if(d.tq){S.tech=d.tq;render()}});
+/* ---- Práctica: regla de tres ---- */
+const PU=['kg','mg','mg/kg','mL','mg/mL','carpules','%'],PRT=[['Paso 1 · Dosis máxima en mg','Dosis por kilo y peso del paciente'],['Paso 2 · De mg a mL','mg que hay en un volumen conocido'],['Paso 3 · De mL a carpules','mL que tiene un carpule']];
+function prInit(){S.pr=[{ua:'kg',ub:'mg',q:['','','','']},{ua:'mL',ub:'mg',q:['','','','']},{ua:'carpules',ub:'mL',q:['','','','']}]}
+function prSolve(i){const c=S.pr[i],v=c.q.map(x=>{const t=String(x).trim().toLowerCase();return t===''||t==='x'?null:num(t)}),U=[c.ua,c.ub,c.ua,c.ub];
+ if(v.every(x=>x===null))return{st:'idle',msg:''};
+ if(v.some(x=>x!==null&&!(x>=0)))return{st:'err',msg:'Hay una casilla con un valor no válido.'};
+ const m=v.map((x,k)=>x===null?k:-1).filter(k=>k>=0);
+ if(!m.length)return{st:'full',msg:'Las 4 casillas están llenas: deja vacía (o escribe x) la que quieres calcular.'};
+ if(m.length>1)return{st:'wait',msg:'Llena 3 casillas y deja la incógnita vacía o con x.'};
+ const k=m[0],[a,b,cc,d]=v,F=n=>f4(n)+' ';let val,tx;
+ if(k===3){if(!a)return{st:'err',msg:'No se puede dividir entre 0.'};val=b*cc/a;tx='x = ('+F(b)+U[1]+' × '+F(cc)+U[2]+') ÷ '+F(a)+U[0]}
+ else if(k===2){if(!b)return{st:'err',msg:'No se puede dividir entre 0.'};val=a*d/b;tx='x = ('+F(a)+U[0]+' × '+F(d)+U[3]+') ÷ '+F(b)+U[1]}
+ else if(k===1){if(!cc)return{st:'err',msg:'No se puede dividir entre 0.'};val=a*d/cc;tx='x = ('+F(a)+U[0]+' × '+F(d)+U[3]+') ÷ '+F(cc)+U[2]}
+ else{if(!d)return{st:'err',msg:'No se puede dividir entre 0.'};val=b*cc/d;tx='x = ('+F(b)+U[1]+' × '+F(cc)+U[2]+') ÷ '+F(d)+U[3]}
+ return{st:'ok',k,val,unit:U[k],tx}}
+function prResHtml(i){const s=prSolve(i);return s.st==='ok'?s.tx+' = <b style="font-size:1.2rem">'+f4(s.val)+' '+s.unit+'</b>':s.msg}
+function prUpd(i){const el=$('#prr'+i);if(el){const s=prSolve(i);el.className='prr'+(s.st==='ok'?'':' w');el.innerHTML=prResHtml(i)}if(S.prCmp){const c=$('#prc');if(c)c.innerHTML=prCmpHtml()}}
+function prCmpHtml(){const r=calc(),p=r.p,cmL=p.c*10,mgW=r.k*r.w,mgA=mgW*r.f,mgF=r.mg,EX=[['mg',mgF,[mgW,mgA]],['mL',mgF/cmL,[mgW/cmL,mgA/cmL]],['carpules',mgF/r.cm,[mgW/r.cm,mgA/r.cm]]],near=(v,t)=>Math.abs(v-t)<=Math.max(.01*Math.abs(t),.0005);
+ let rows='',uc=null;
+ for(let i=0;i<3;i++){const s=prSolve(i),e=EX[i];
+  if(s.st!=='ok'){rows+='<tr><td>'+PRT[i][0]+'<br><small class="mut">Tu cuadro: sin completar</small></td><td>'+f4(e[1])+' '+e[0]+'</td></tr>';continue}
+  const uo=s.unit===e[0];let m,tg;
+  if(uo&&near(s.val,e[1])){m='Coincide con la app.';tg='ok'}
+  else if(uo&&e[2].some(t=>near(s.val,t))){const why=[];if(mgW>r.m+1e-9)why.push('el tope absoluto de '+fmt(r.m)+' mg');if(r.f<1)why.push('el ajuste por la condición del paciente (× '+r.f+')');m='Tu regla de tres está bien, pero la app además aplicó '+(why.join(' y ')||'un límite adicional')+'.';tg='w'}
+  else{m=uo?'No coincide. Revisa los datos que usaste (dosis por kilo, concentración, mg y mL por carpule).':'El resultado debería estar en '+e[0]+', no en '+s.unit+'.';tg='e'}
+  if(i===2&&uo)uc=s.val;
+  rows+='<tr><td>'+PRT[i][0]+'<br><small class="mut">Tu cuadro: '+f4(s.val)+' '+s.unit+'</small><br><small>'+m+'</small></td><td>App: '+f4(e[1])+' '+e[0]+(Math.abs(e[2][0]-e[1])>1e-9?'<br><small class="mut">sin tope: '+f4(e[2][0])+'</small>':'')+'</td></tr>'}
+ const mx=Math.floor(r.Nt+1e-9);let v='';
+ if(uc!==null){const u=Math.floor(uc+1e-9),extra=(r.blocks.length?' Este anestésico no es apropiado para el paciente, por eso la app lo limita a 0.':'')+(!r.blocks.length&&p.v&&r.V<r.A-1e-9?' El '+r.lim+' limita a '+fmt(r.V)+' carpules y tu cuadro no lo incluye.':'')+(!r.blocks.length&&mgW>r.m+1e-9?' El tope absoluto de '+fmt(r.m)+' mg reduce el máximo.':'');
+  v=u>mx?['e','Ojo: te pasarías del máximo','Tu cuadro da '+u+' carpules enteros y el máximo de la app es '+mx+' ('+fmt(r.Nt)+' exactos). Administrar '+u+' superaría la dosis máxima.'+extra]:u===mx?['ok','Coinciden en carpules enteros','Tu cuadro y la app dan '+mx+' carpules máximos.'+extra]:['w','Tu cuadro es más conservador','Tu cuadro da '+u+' carpules enteros y la app permite hasta '+mx+' ('+fmt(r.Nt)+' exactos).'+extra]}
+ return'<h3>Comparación con la app</h3><div class="res" style="margin:0"><table>'+rows+'<tr><td><b>Carpules máximos de la app</b><br><small class="mut">'+fmt(r.Nt)+' exactos = '+fmt(r.Nt*S.vol)+' mL</small></td><td><b>'+mx+' enteros</b></td></tr></table></div>'+(v?'<div class="vd '+v[0]+'"><b>'+v[1]+'</b><div>'+v[2]+'</div></div>':'<div class="al w">Completa el paso 3 para comparar los carpules finales.</div>')}
+function s4(){if(!S.pr)prInit();const has=!!S.pid,r=has?calc():null,p=has?r.p:null;
+ let h='<h2>Práctica: regla de tres</h2><p class="mut">Escribe los datos de cada regla de tres y deja vacía la casilla que quieres calcular (o escribe x). La app hace la multiplicación y la división en el "=". Al final comparamos tu cuadro con el cálculo de la app.</p><div class="res" style="margin-top:8px"><b>'+(has?p.n:'Anestésico por elegir')+'</b><br>Paciente: '+fmt(num(S.w))+' kg · carpule de '+fmt(S.vol)+' mL</div>';
+ S.pr.forEach((c,i)=>{const sel=(j,u)=>'<select data-pu="'+i+'.'+j+'" aria-label="Unidad">'+PU.map(x=>'<option '+(x===u?'selected':'')+'>'+x+'</option>').join('')+'</select>',inp=j=>'<input data-pq="'+i+'.'+j+'" inputmode="decimal" autocomplete="off" value="'+esc(c.q[j])+'" placeholder="'+(j===3?'dato o x':'dato')+'">',st=prSolve(i);
+  h+='<div class="res" style="margin-top:12px"><b>'+PRT[i][0]+'</b><br><small class="mut">'+PRT[i][1]+'</small><div class="pg">'+sel(0,c.ua)+sel(1,c.ub)+inp(0)+inp(1)+inp(2)+inp(3)+'</div><div class="prr'+(st.st==='ok'?'':' w')+'" id="prr'+i+'">'+prResHtml(i)+'</div></div>'});
+ return h+''+(has?'<button class="btn" data-prcmp="1" style="width:100%;margin-top:16px">Comparar con la app</button><div id="prc">'+(S.prCmp?prCmpHtml():'')+'</div>':'<div class="al w" style="margin-top:16px">Podrás comparar tu cuadro con el cálculo de la app cuando elijas el anestésico (paso 4). Después puedes volver a esta página desde el resultado.</div>')+'<div class="nav" style="flex-wrap:wrap"><button class="btn ghost" data-go="0">Atrás</button>'+(has?'<button class="btn ghost" data-go="4">Volver al resultado</button>':'')+'<button class="btn" data-go="2">Continuar</button><button class="btn ghost" data-prclr="1">Limpiar cuadros</button><button class="btn ghost" id="reset">Nuevo paciente</button></div>'}
+document.addEventListener('input',e=>{const d=e.target.dataset;if(d.pq){const k=d.pq.split('.');S.pr[+k[0]].q[+k[1]]=e.target.value;prUpd(+k[0])}});
+document.addEventListener('change',e=>{const d=e.target.dataset;if(d.pu){const k=d.pu.split('.');S.pr[+k[0]][k[1]==='0'?'ua':'ub']=e.target.value;prUpd(+k[0])}});
+document.addEventListener('click',e=>{const b=e.target.closest('[data-prcmp],[data-prclr]');if(!b)return;if(b.dataset.prcmp!==undefined){S.prCmp=true;const c=$('#prc');if(c){c.innerHTML=prCmpHtml();if(c.scrollIntoView)c.scrollIntoView({behavior:'smooth',block:'start'})}}else{prInit();S.prCmp=false;render()}});
 /* ---- Cronómetro de 1 minuto ---- */
 const TM={dur:60000,run:false,end:0,left:60000,fin:false,iv:null,ctx:null};
 const tmLeft=()=>TM.run?Math.max(0,TM.end-Date.now()):TM.left;
@@ -329,9 +431,9 @@ function tmBox(){const l=tmLeft();
 function tmUpd(){const l=tmLeft(),t=$('#tmt');
  if(t){t.textContent=tmFmt(l);$('#tmb').style.transform='scaleX('+(l/TM.dur)+')';const b=$('#tm');b.classList.toggle('fin',TM.fin);b.classList.toggle('low',!TM.fin&&TM.run&&l<=10000)}
  if(TM.run&&l<=0)tmDone()}
-function tmBeep(){try{const c=TM.ctx;if(!c)return;const o0=c.currentTime+.05,cp=c.createDynamicsCompressor(),mg=c.createGain();mg.gain.value=1;cp.connect(mg);mg.connect(c.destination);
- for(let i=0;i<8;i++){const t=o0+i*.32,f=i%2?1175:1568;['square','sawtooth'].forEach(ty=>{const o=c.createOscillator(),g=c.createGain();o.type=ty;o.frequency.value=f;g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.9,t+.01);g.gain.setValueAtTime(.9,t+.2);g.gain.exponentialRampToValueAtTime(.0001,t+.27);o.connect(g);g.connect(cp);o.start(t);o.stop(t+.3)})}}catch(_){}
- try{navigator.vibrate&&navigator.vibrate([500,150,500,150,500,150,500])}catch(_){}}
+function tmBeep(){try{const c=TM.ctx;if(!c)return;const t0=c.currentTime+.35,out=c.createGain(),lp=c.createBiquadFilter();lp.type='lowpass';lp.frequency.value=2600;out.gain.value=.7;lp.connect(out);out.connect(c.destination);
+ [[523.25,0],[659.25,.45],[783.99,.9],[523.25,2.6],[659.25,3.05],[783.99,3.5]].forEach(([f,d])=>{const s=t0+d;[[f,.22,1.7],[f*2,.05,.9]].forEach(([fr,pk,du])=>{const o=c.createOscillator(),g=c.createGain();o.type='sine';o.frequency.value=fr;g.gain.setValueAtTime(.0001,s);g.gain.linearRampToValueAtTime(pk,s+.06);g.gain.exponentialRampToValueAtTime(.0001,s+du);o.connect(g);g.connect(lp);o.start(s);o.stop(s+du+.05)})})}catch(_){}
+ try{navigator.vibrate&&navigator.vibrate([200,120,200])}catch(_){}}
 /* música relajante generada en el navegador */
 function musOn(){try{const c=TM.ctx;if(!c||TM.m)return;const g=c.createGain(),lp=c.createBiquadFilter();lp.type='lowpass';lp.frequency.value=1400;g.gain.setValueAtTime(0,c.currentTime);g.gain.linearRampToValueAtTime(.35,c.currentTime+2.5);lp.connect(g);g.connect(c.destination);
  const CH=[[130.81,261.63,329.63,392,493.88],[110,220,261.63,329.63,392],[87.31,174.61,220,261.63,329.63],[98,196,246.94,293.66,392]],PE=[523.25,587.33,659.25,783.99,880,1046.5],L=8;
@@ -373,3 +475,4 @@ c.addEventListener('click',()=>{if(ok||d){hide();return}
  const fin=()=>setTimeout(hide,150);
  if(pr&&pr.then)pr.then(()=>{ok=true;au.addEventListener('ended',fin,{once:true});setTimeout(hide,3800)}).catch(hide);else hide()})})();
 </script></body></html>
+
